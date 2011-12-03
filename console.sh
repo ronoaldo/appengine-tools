@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
 basedir="$(dirname $0)"
 basedir="$(readlink -f $basedir)"
 
-classpath="bin:src"
+CLASSPATH="${CLASSPATH:-.}:bin:src"
 for jar in $basedir/lib/**/*.jar; do
-	classpath="${classpath}:${jar}"
+	CLASSPATH="${CLASSPATH}:${jar}"
 done
+export CLASSPATH
 
-java -cp "$classpath" net.ronoaldo.code.appenginetools.Console $*
+exec java net.ronoaldo.code.appenginetools.Console "$@"

@@ -18,16 +18,9 @@ public class Console {
 	public OptionSet opt;
 
 	private void run(String[] args) {
-		parseOptions(args);
-		
-		if (opt.has("remote")) {
-			helper = new RemoteApiHelper(String.format("https://%s.appspot.com:%s%s",
-					opt.valueOf("appid"), 443, opt.valueOf("path")));
-		} else {
-			helper = new RemoteApiHelper(String.format(
-					"http://localhost:8888%s", opt.valueOf("path")));
-		}
-		
+		parseCommandLineOptions(args);
+		configureRemoteApiHelper();
+
 		try {
 			helper.connect();
 			shell();
@@ -38,7 +31,18 @@ public class Console {
 		}
 	}
 
-	private void parseOptions(String[] args) {
+	private void configureRemoteApiHelper() {
+		if (opt.has("remote")) {
+			helper = new RemoteApiHelper(String.format(
+					"https://%s.appspot.com:%s%s", opt.valueOf("appid"), 443,
+					opt.valueOf("path")));
+		} else {
+			helper = new RemoteApiHelper(String.format(
+					"http://localhost:8888%s", opt.valueOf("path")));
+		}
+	}
+
+	private void parseCommandLineOptions(String[] args) {
 		opt = getParser().parse(args);
 		if (opt.has("h")) {
 			try {
@@ -56,8 +60,7 @@ public class Console {
 				System.out, System.err, true);
 
 		shell.set("bsh.prompt",
-				String.format("appengine@%s: $ ", opt.valueOf("appid")));
-
+				String.format("appengine@%s: %% ", opt.valueOf("appid")));
 		sourceDefaults(shell);
 
 		if (opt.has("f")) {
@@ -90,7 +93,12 @@ public class Console {
 		parser.accepts("remote", "Connect with appspot.com");
 		parser.accepts("path", "Remote API handler path").withRequiredArg()
 				.ofType(String.class).defaultsTo(PATH);
-		parser.acceptsAll(Arrays.asList("?","h","help"), "Print help and exit");
+		parser.acceptsAll(Arrays.asList("f", "file"),
+				"Runs the specified script and exists.").withRequiredArg()
+				.ofType(String.class).describedAs("file");
+		parser.acceptsAll(Arrays.asList("?", "h", "help"),
+				"Print help and exit");
+		parser.accepts("gui");
 		return parser;
 	}
 

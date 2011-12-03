@@ -13,8 +13,9 @@ import com.google.appengine.tools.remoteapi.RemoteApiOptions;
 
 public class RemoteApiHelper {
 
-	private static final Logger logger = Logger.getLogger(RemoteApiHelper.class.getName());
-	
+	private static final Logger logger = Logger.getLogger(RemoteApiHelper.class
+			.getName());
+
 	class Credentials {
 		String username;
 		String password;
@@ -37,12 +38,15 @@ public class RemoteApiHelper {
 	}
 
 	public void connect() {
-		logger.info("Connecting with " + url.getHost() +", port " + url.getPort() + ", path=" + url.getPath());
-		
+		logger.info("Connecting with " + url.getHost() + ", port "
+				+ url.getPort() + ", path=" + url.getPath());
+
 		Credentials c = getCredentials();
-		
-		RemoteApiOptions options = new RemoteApiOptions().server(url.getHost(),
-				url.getPort()).remoteApiPath(url.getPath()).credentials(c.username, c.password);
+
+		RemoteApiOptions options = new RemoteApiOptions()
+				.server(url.getHost(), url.getPort())
+				.remoteApiPath(url.getPath())
+				.credentials(c.username, c.password);
 
 		remoteApi = new RemoteApiInstaller();
 		try {

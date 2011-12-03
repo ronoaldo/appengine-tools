@@ -20,7 +20,7 @@
 
 	<target name="ivy/libs">
 		<ivy:settings file="ivysettings.xml" />
-		<ivy:retrieve pattern="lib/[conf]/[artifact]-[revision].jar" />
+		<ivy:retrieve pattern="lib/[conf]/[artifact]-[revision].jar" type="jar,bundle" />
 	</target>
 
 	<target name="build" depends="ivy/libs" description="Build's the project">
