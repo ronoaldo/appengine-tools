@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+    <info
+        organisation="net.ronoaldo.code"
+        module="appengine-tools"
+        status="integration"
+        revision="1.0-SNAPSHOT">
+	</info>
+	<dependencies>
+		<dependency org="bsh" name="bsh" rev="2.0b4" conf="default->default"></dependency>
+		<dependency org="net.sf.jopt-simple" name="jopt-simple" rev="4.3" conf="default->default"></dependency>
+		<dependency org="com.google.appengine" name="appengine-api-1.0-sdk" rev="1.6.0"></dependency>
+		<dependency org="com.google.appengine" name="appengine-remote-api" rev="1.6.0"></dependency>
+	</dependencies>
+</ivy-module>
