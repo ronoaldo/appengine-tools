@@ -1,47 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="appengine-tools" basedir="." default="build" xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="appengine-tools"
+         basedir="."
+         default="build"
+         xmlns:ivy="antlib:org.apache.ivy.ant">
 	<description>
-            Google AppEngine Utilities
-    </description>
+	Google AppEngine Utilities
+	</description>
 
-	<path id="project.classpath">
-		<fileset dir="lib" includes="**/*.jar" />
-		<pathelement location="src" />
-	</path>
+	<import file="anthill/anthill.xml" />
 
-	<target name="clean">
-		<delete dir="lib" />
-		<delete dir="build" />
-		<delete dir="bin" />
-		<mkdir dir="lib" />
-		<mkdir dir="build/jar" />
-		<mkdir dir="bin" />
-	</target>
-
-	<target name="ivy/libs">
-		<ivy:settings file="ivysettings.xml" />
-		<ivy:retrieve pattern="lib/[conf]/[artifact]-[revision].jar" type="jar,bundle" />
-	</target>
-
-	<target name="build" depends="ivy/libs" description="Build's the project">
-		<javac classpathref="project.classpath" srcdir="src" destdir="bin" debug="true" />
-		<copy todir="bin">
-			<fileset dir="src">
-				<include name="META-INF/**" />
-			</fileset>
-		</copy>
-		<jar basedir="bin" destfile="build/jar/appengine-tools.jar">
-			<include name="**" />
-			<zipgroupfileset dir="lib" includes="**/*.jar" />
+	<target name="jar">
+		<manifestclasspath jarfile="${anthill.artifact.dir}/${ant.project.name}-jar.jar"
+		                   property="build.manifest.classpathentry">
+			<classpath refid="anthill.paths.ivylibs">
+			</classpath>
+		</manifestclasspath>
+		<antcall target="anthill.jar" />
+		<jar update="true"
+		     jarfile="${anthill.artifact.dir}/${ant.project.name}-jar.jar">
 			<manifest>
-				<attribute name="X-Vendor" value="http://www.ronoaldo.net" />
-				<attribute name="Main-Class" value="net.ronoaldo.code.appenginetools.Console" />
+				<attribute name="Main-Class"
+				           value="net.ronoaldo.code.appenginetools.Console" />
+				<attribute name="Class-Path"
+				           value="${build.manifest.classpathentry}" />
 			</manifest>
 		</jar>
 	</target>
 
 	<target name="deploy" depends="build">
-		<ivy:publish resolver="local-repository" artifactspattern="build/[type]/[artifact].[ext]" forcedeliver="true" update="true" overwrite="true">
+		<ivy:publish resolver="local-repository"
+		             artifactspattern="build/[type]/[artifact].[ext]"
+		             forcedeliver="true"
+		             update="true"
+		             overwrite="true">
 		</ivy:publish>
 	</target>
 </project>

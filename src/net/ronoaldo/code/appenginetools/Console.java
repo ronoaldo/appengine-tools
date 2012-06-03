@@ -10,6 +10,18 @@ import joptsimple.OptionSet;
 import bsh.EvalError;
 import bsh.Interpreter;
 
+/**
+ * Interactive console to manage your Google AppEngine application.
+ * 
+ * <p>
+ * This is a simple console app that allows you to manage your AppEngine
+ * application from a command prompt. It also has support to run scripts in
+ * BeanShell language.
+ * 
+ * @author Ronoaldo JLP &lt;ronoaldo@ronoaldo.net&gt;
+ * @see <a href="http://www.beanshell.org/">The BeanShell home page.</a>
+ * @see <a href="http://jline.sourceforge.net/">JLine home page.</a>
+ */
 public class Console {
 
 	public static final String PATH = "/_ah/remote_api";
@@ -90,7 +102,7 @@ public class Console {
 		OptionParser parser = new OptionParser();
 		parser.accepts("appid", "Application ID").withRequiredArg()
 				.ofType(String.class);
-		parser.accepts("remote", "Connect with appspot.com");
+		parser.accepts("remote", "Connect with production app at *.appspot.com");
 		parser.accepts("path", "Remote API handler path").withRequiredArg()
 				.ofType(String.class).defaultsTo(PATH);
 		parser.acceptsAll(Arrays.asList("f", "file"),
@@ -102,6 +114,13 @@ public class Console {
 		return parser;
 	}
 
+	/**
+	 * Run a {@link Console} session, parsing command-line arguments and
+	 * conecting with the AppEngine instance locally or remotely.
+	 * 
+	 * @param args
+	 *            the command line options.
+	 */
 	public static void main(String[] args) {
 		Console console = new Console();
 		console.run(args);
