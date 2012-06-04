@@ -13,7 +13,7 @@
         <artifact type="jar" conf="default" ext="jar"></artifact>
     </publications>
     <dependencies>
-        <dependency org="jline" name="jline" rev="1.0" conf="build->default" />
+        <dependency org="jline" name="jline" rev="0.9.94" conf="build->default" />
         <dependency org="bsh" name="bsh" rev="2.0b4" conf="build->default" />
         <dependency org="net.sf.jopt-simple" name="jopt-simple" rev="4.3" conf="build->default" />
         <dependency org="com.google.appengine" name="appengine-api-1.0-sdk" rev="1.6.6" conf="build->default" />

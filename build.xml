@@ -7,15 +7,15 @@
 	Google AppEngine Utilities
 	</description>
 
-	<import file="anthill/anthill.xml" />
+	<import file="anthill.xml" />
 
 	<target name="jar">
+		<antcall target="anthill.jar" />
 		<manifestclasspath jarfile="${anthill.artifact.dir}/${ant.project.name}-jar.jar"
 		                   property="build.manifest.classpathentry">
 			<classpath refid="anthill.paths.ivylibs">
 			</classpath>
 		</manifestclasspath>
-		<antcall target="anthill.jar" />
 		<jar update="true"
 		     jarfile="${anthill.artifact.dir}/${ant.project.name}-jar.jar">
 			<manifest>

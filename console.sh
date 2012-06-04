@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Working directories
 basedir="$(dirname $0)"
