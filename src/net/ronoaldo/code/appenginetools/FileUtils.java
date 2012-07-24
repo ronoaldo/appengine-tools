@@ -15,7 +15,12 @@
 //
 package net.ronoaldo.code.appenginetools;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * Filesystem utility functions.
@@ -39,4 +44,57 @@ public class FileUtils {
 		return f;
 	}
 
+	/**
+	 * Load a file contents as a String.
+	 * 
+	 * @param file
+	 *            the file to be loaded.
+	 * @return the file contents as a String.
+	 */
+	public static String loadFileContents(File file) {
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+
+			StringWriter sw = new StringWriter();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				sw.write(line);
+			}
+			reader.close();
+
+			return sw.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static void saveFileContents(File file, String contents) {
+		try {
+			FileWriter fw = new FileWriter(file);
+			fw.write(contents);
+			fw.close();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Saves the file contents to a file.
+	 * 
+	 * @param filename
+	 *            the filename.
+	 * @param contents
+	 *            the file contents.
+	 */
+	public static void saveFileContents(String filename, String contents) {
+		try {
+			File file = new File(filename);
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			saveFileContents(file, contents);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

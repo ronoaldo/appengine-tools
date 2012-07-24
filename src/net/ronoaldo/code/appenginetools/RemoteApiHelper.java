@@ -18,11 +18,14 @@ package net.ronoaldo.code.appenginetools;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import com.google.appengine.repackaged.org.apache.commons.httpclient.Credentials;
 import com.google.appengine.tools.remoteapi.RemoteApiInstaller;
 import com.google.appengine.tools.remoteapi.RemoteApiOptions;
 import com.google.apphosting.api.ApiProxy;
@@ -40,38 +43,6 @@ public class RemoteApiHelper {
 
 	private static final Logger logger = Logger.getLogger(RemoteApiHelper.class
 			.getName());
-
-	/**
-	 * Class that holds the username and password to connect with AppEngine.
-	 * 
-	 * @author Ronoaldo JLP &lt;ronoaldo@ronoaldo.net&gt;
-	 */
-	class Credentials {
-
-		/**
-		 * Google account username.
-		 */
-		String username;
-
-		/**
-		 * Clear text Google account password.
-		 */
-		String password;
-
-		/**
-		 * Creates a new Credentials object with the informed username and
-		 * password.
-		 * 
-		 * @param username
-		 *            the username.
-		 * @param password
-		 *            the password.
-		 */
-		Credentials(String username, String password) {
-			this.username = username;
-			this.password = password;
-		}
-	}
 
 	private URL url;
 
@@ -100,19 +71,33 @@ public class RemoteApiHelper {
 		logger.info("Connecting with " + url.getHost() + ", port "
 				+ url.getPort() + ", path=" + url.getPath());
 
-		Credentials c = getCredentials();
+		RemoteApiOptions options = new RemoteApiOptions().server(//
+				url.getHost(), url.getPort()).remoteApiPath(url.getPath());
 
-		RemoteApiOptions options = new RemoteApiOptions()
-				.server(url.getHost(), url.getPort())
-				.remoteApiPath(url.getPath())
-				.credentials(c.username, c.password);
+		Properties credentials = getCredentials();
+
+		// If we have a previous session, reuse it:
+		if (credentials.containsKey("host")) {
+			options.credentials(//
+					credentials.getProperty("email"), serialize(credentials));
+		} else {
+			options.credentials(credentials.getProperty("email"),
+					credentials.getProperty("password"));
+		}
 
 		remoteApi = new RemoteApiInstaller();
 		try {
 			remoteApi.install(options);
+			storeCredentials(remoteApi.serializeCredentials());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String serialize(Properties credentials) {
+		StringWriter sw = new StringWriter();
+		credentials.list(new PrintWriter(sw));
+		return sw.toString();
 	}
 
 	/**
@@ -138,23 +123,33 @@ public class RemoteApiHelper {
 	 * 
 	 * @return the informed user {@link Credentials}.
 	 */
-	protected Credentials getCredentials() {
+	protected Properties getCredentials() {
+		Properties p = new Properties();
 		File f = FileUtils.atHomeDir(".remoteapi.properties");
 		if (f.exists()) {
-			Properties p = new Properties();
 			try {
 				p.load(new FileReader(f));
-				return new Credentials(p.getProperty("email"),
-						p.getProperty("password"));
 			} catch (IOException e) {
-				e.printStackTrace();
 				throw new RuntimeException(e);
 			}
 		} else {
 			String email = new String(System.console().readLine("Email: "));
 			String password = new String(System.console().readPassword(
 					"Password: "));
-			return new Credentials(email, password);
+			p.setProperty("email", email);
+			p.setProperty("password", password);
 		}
+		return p;
+	}
+
+	/**
+	 * Stores the current file credentials.
+	 * 
+	 * @param credentials
+	 *            the credentials to be stored.
+	 */
+	protected void storeCredentials(String credentials) {
+		FileUtils.saveFileContents(
+				FileUtils.atHomeDir(".remoteapi.properties"), credentials);
 	}
 }
