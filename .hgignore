@@ -5,4 +5,7 @@ build/*
 bin/*
 test-bin/*
 javadoc/*
-.settings/org.eclipse.jdt.core.prefs
+target/*
+.settings/*
+.project
+.classpath
