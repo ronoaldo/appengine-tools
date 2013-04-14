@@ -45,7 +45,9 @@ public class Console {
 	public OptionSet opt;
 
 	private void run(String[] args) {
-		parseCommandLineOptions(args);
+		if (!parseCommandLineOptions(args)) {
+			return;
+		}
 		configureRemoteApiHelper();
 
 		try {
@@ -69,17 +71,17 @@ public class Console {
 		}
 	}
 
-	private void parseCommandLineOptions(String[] args) {
+	private boolean parseCommandLineOptions(String[] args) {
 		opt = getParser().parse(args);
 		if (opt.has("h")) {
 			try {
 				getParser().printHelpOn(System.out);
-				System.exit(0);
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.exit(1);
 			}
+			return false;
 		}
+		return true;
 	}
 
 	private void shell() throws EvalError {
