@@ -18,6 +18,13 @@
 	<url>http://code.ronoaldo.net/appengine-tools</url>
 	<inceptionYear>2012</inceptionYear>
 
+	<repositories>
+		<repository>
+			<id>ronoaldo-repository</id>
+			<url>http://repository.ronoaldo.net/maven/release</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
