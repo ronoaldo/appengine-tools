@@ -37,65 +37,38 @@ import bsh.Interpreter;
  * @see <a href="http://www.beanshell.org/">The BeanShell home page.</a>
  * @see <a href="http://jline.sourceforge.net/">JLine home page.</a>
  */
-public class Console {
+public class Console extends AbstractCliApp {
 
-	public static final String PATH = "/_ah/remote_api";
+	@Override
+	protected OptionParser getParser() {
+		OptionParser parser = super.getParser();
+		parser.acceptsAll(Arrays.asList("f", "file"),
+				"Runs the specified script and exists")
+			.withRequiredArg()
+			.ofType(String.class)
+			.describedAs("file");
+		return parser;
+	}
 
-	public RemoteApiHelper helper;
-	public OptionSet opt;
-
-	private void run(String[] args) {
-		if (!parseCommandLineOptions(args)) {
-			return;
-		}
-		configureRemoteApiHelper();
+	@Override
+	public void run() {
+		Interpreter shell = new Interpreter(
+			new InputStreamReader(System.in),
+			System.out, System.err, true
+		);
 
 		try {
-			helper.connect();
-			shell();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			helper.disconnect();
-		}
-	}
+			String prompt = String.format("appengine@%s: %% ", opt.valueOf("appid"));
+			shell.set("bsh.prompt", prompt);
+			sourceDefaults(shell);
 
-	private void configureRemoteApiHelper() {
-		if (opt.has("remote")) {
-			helper = new RemoteApiHelper(String.format(
-					"https://%s.appspot.com:%s%s", opt.valueOf("appid"), 443,
-					opt.valueOf("path")));
-		} else {
-			helper = new RemoteApiHelper(String.format(
-					"http://localhost:8888%s", opt.valueOf("path")));
-		}
-	}
-
-	private boolean parseCommandLineOptions(String[] args) {
-		opt = getParser().parse(args);
-		if (opt.has("h")) {
-			try {
-				getParser().printHelpOn(System.out);
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (opt.has("f")) {
+				source(shell, (String) opt.valueOf("f"));
+			} else {
+				shell.run();
 			}
-			return false;
-		}
-		return true;
-	}
-
-	private void shell() throws EvalError {
-		Interpreter shell = new Interpreter(new InputStreamReader(System.in),
-				System.out, System.err, true);
-
-		shell.set("bsh.prompt",
-				String.format("appengine@%s: %% ", opt.valueOf("appid")));
-		sourceDefaults(shell);
-
-		if (opt.has("f")) {
-			source(shell, (String) opt.valueOf("f"));
-		} else {
-			shell.run();
+		} catch (EvalError e ) {
+			e.printStackTrace();
 		}
 	}
 
@@ -115,22 +88,6 @@ public class Console {
 		}
 	}
 
-	private OptionParser getParser() {
-		OptionParser parser = new OptionParser();
-		parser.accepts("appid", "Application ID").withRequiredArg()
-				.ofType(String.class);
-		parser.accepts("remote", "Connect with production app at *.appspot.com");
-		parser.accepts("path", "Remote API handler path").withRequiredArg()
-				.ofType(String.class).defaultsTo(PATH);
-		parser.acceptsAll(Arrays.asList("f", "file"),
-				"Runs the specified script and exists.").withRequiredArg()
-				.ofType(String.class).describedAs("file");
-		parser.acceptsAll(Arrays.asList("?", "h", "help"),
-				"Print help and exit");
-		parser.accepts("gui");
-		return parser;
-	}
-
 	/**
 	 * Run a {@link Console} session, parsing command-line arguments and
 	 * conecting with the AppEngine instance locally or remotely.
@@ -140,6 +97,6 @@ public class Console {
 	 */
 	public static void main(String[] args) {
 		Console console = new Console();
-		console.run(args);
+		console.runFromMain(args);
 	}
 }
