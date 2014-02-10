@@ -49,3 +49,4 @@ The format of the yaml document is like:
 	properties: {
 	  property1: 'Value 1'
 	  property2: 234
+	}
