@@ -16,10 +16,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.appengine.api.datastore.Blob;
+import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.Text;
 
 public class EntitySerializerTest {
 
@@ -36,24 +39,48 @@ public class EntitySerializerTest {
 	}
 
 	@Test
+	public void testSerializeStringAndText() throws Exception {
+		Entity e = new Entity("ComplexEntity", "key-name");
+		e.setProperty("short-string", "This is a simple short string");
+		e.setProperty("long-string", new Text("This is a long text string"));
+
+		EntitySerializer s = new EntitySerializer();
+		String yaml = s.serialize(asList(e).iterator());
+		System.out.println("Yaml:\n" + yaml);
+
+		Entity d = s.deserialize(yaml).next();
+		assertEquals(e.getProperty("short-string"), d.getProperty("short-string"));
+		assertEquals(e.getProperty("long-string"), d.getProperty("long-string"));
+	}
+
+	@Test
+	public void testSerializeLongAndShortBlobs() throws Exception {
+		Entity e = new Entity("ComplextBlobs", "blob-holder-1");
+		e.setProperty("short-blob", new ShortBlob("ShortBlob".getBytes()));
+		e.setProperty("long-blob", new Blob("LongBlob".getBytes()));
+
+		EntitySerializer s = new EntitySerializer();
+		String yaml = s.serialize(asList(e).iterator());
+		System.out.println("Yaml:\n" + yaml);
+
+		Entity d = s.deserialize(yaml).next();
+		assertEquals(e.getProperty("short-blob"), d.getProperty("short-blob"));
+		assertEquals(e.getProperty("long-blob"), d.getProperty("long-blob"));
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testSerializeEntity() throws EntityNotFoundException {
-		Entity e = new Entity("test");
-		e.setProperty("a", (short) 1);
-		DatastoreService ds = DatastoreServiceFactory.getDatastoreService();
-		ds.put(e);
-		System.out.println(ds.get(e.getKey()).getProperty("a").getClass());		
-		
-		Entity entity = new Entity("TestEntity", 1l);
-		entity.setProperty("str", "short string property value");
-		entity.setProperty("long", 27);
-		entity.setProperty("double", 37d);
-		entity.setProperty("bool", true);
-		entity.setProperty("date", new Date());
-		entity.setProperty("a.b", asList("a", "b", "c"));
-		entity.setProperty("c.d", asList("c", "d", "e"));
-		entity.setProperty("mixed liset", asList("a", 1, true, 2d));
-		entity.setProperty("mixed set", asSet("one", 2, new Integer(3)));
+		Entity entity = new Entity("Profile", 1l);
+		entity.setProperty("name", "John Doe");
+		entity.setProperty("age", 27);
+		entity.setProperty("height", 1.87d);
+		entity.setProperty("activeProfile", true);
+		entity.setProperty("registrationDate", new Date());
+		entity.setProperty("preferences.fruits", asList("Apple", "Orange", "Lemon"));
+		entity.setProperty("preferences.cars", asList("Porshe", "Camaro", "Mustang"));
+		entity.setProperty("system.mixedList", asList("public", 12, true, 2d));
+		entity.setProperty("system.mixedSet", asSet("one", 2, new Integer(3)));
 
 		EntitySerializer s = new EntitySerializer();
 		String yaml = s.serialize(asList(entity).iterator());
@@ -68,12 +95,12 @@ public class EntitySerializerTest {
 				deserialized.getProperties().size());
 		for (Map.Entry<String, Object> src : entity.getProperties().entrySet()) {
 			Map<String, Object> dest = deserialized.getProperties();
-			assertTrue(format("%s não encontrada", src.getKey()),
+			assertTrue(format("Missing property '%s'", src.getKey()),
 					dest.containsKey(src.getKey()));
 
 			if (Collection.class.isAssignableFrom(src.getValue().getClass())) {
 				Collection<?> destColl = (Collection<?>) dest.get(src.getKey());
-				assertTrue(format("Valor inesperado: %s", destColl),
+				assertTrue(format("Unexpected value: %s", destColl),
 						destColl.containsAll((Collection<?>) src.getValue()));
 			} else {
 				assertEquals(src.getValue(),
@@ -82,6 +109,7 @@ public class EntitySerializerTest {
 		}
 	}
 
+	@SafeVarargs
 	private static <T> List<T> asList(T... items) {
 		List<T> l = new ArrayList<T>();
 		for (T i : items)
@@ -89,6 +117,7 @@ public class EntitySerializerTest {
 		return l;
 	}
 
+	@SafeVarargs
 	private static <T> Set<T> asSet(T... items) {
 		Set<T> s = new HashSet<T>();
 		for (T i : items)

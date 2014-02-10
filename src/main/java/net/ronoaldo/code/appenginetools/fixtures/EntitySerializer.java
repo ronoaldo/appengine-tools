@@ -41,9 +41,9 @@ public class EntitySerializer {
 	 */
 	private DumperOptions configureDumper() {
 		DumperOptions dumper = new DumperOptions();
-		dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
+		// dumper.setDefaultFlowStyle(DumperOptions.FlowStyle.FLOW);
 		dumper.setExplicitStart(true);
-		dumper.setPrettyFlow(true);
+		// dumper.setPrettyFlow(true);
 		dumper.setWidth(80);
 		logger.fine("tags:" + dumper.getTags());
 		return dumper;
