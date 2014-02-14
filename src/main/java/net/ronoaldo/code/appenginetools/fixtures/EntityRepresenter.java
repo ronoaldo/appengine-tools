@@ -10,10 +10,12 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Represent;
 import org.yaml.snakeyaml.representer.Representer;
 
+import com.google.appengine.api.blobstore.BlobKey;
+
 import com.google.appengine.api.datastore.Blob;
-import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -27,9 +29,11 @@ class EntityRepresenter extends Representer {
 
 	EntityRepresenter() {
 		this.representers.put(Entity.class, new EntityRepresent());
+		this.representers.put(Key.class, new KeyRepresent());
+		this.representers.put(BlobKey.class, new BlobKeyRepresent());
 		this.representers.put(Blob.class, new BlobRepresent());
-		this.representers.put(Text.class, new TextRepresent());
 		this.representers.put(ShortBlob.class, new ShortBlobRepresent());
+		this.representers.put(Text.class, new TextRepresent());
 	}
 
 	/**
@@ -83,6 +87,22 @@ class EntityRepresenter extends Representer {
 		public Node representData(Object data) {
 			ShortBlob blob = (ShortBlob) data;
 			return super.representData(blob.getBytes());
+		}
+	}
+
+	private class KeyRepresent implements Represent {
+		@Override
+		public Node representData(Object data) {
+			Key key = (Key) data;
+			return representSequence(new Tag("!key"), Arrays.asList(KeyPath.toKeyPath(key)), true);
+		}
+	}
+
+	private class BlobKeyRepresent implements Represent {
+		@Override
+		public Node representData(Object data) {
+			BlobKey blobKey = (BlobKey) data;
+			return representScalar(new Tag("!blobkey"), blobKey.getKeyString());
 		}
 	}
 }

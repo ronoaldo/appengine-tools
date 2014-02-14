@@ -12,10 +12,12 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 
+import com.google.appengine.api.blobstore.BlobKey;
+
 import com.google.appengine.api.datastore.Blob;
-import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 
 import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
@@ -29,8 +31,10 @@ class EntityConstructor extends Constructor {
 
 	EntityConstructor() {
 		this.yamlConstructors.put(new Tag("!entity"), new EntityConstruct());
+		this.yamlConstructors.put(new Tag("!key"), new KeyConstruct());
 		this.yamlConstructors.put(new Tag("!blob"), new BlobConstruct());
 		this.yamlConstructors.put(new Tag("!text"), new TextConstruct());
+		this.yamlConstructors.put(new Tag("!blobkey"), new BlobKeyConstruct());
 		this.yamlConstructors.put(Tag.BINARY, new ShortBlobConstruct());
 	}
 
@@ -88,6 +92,23 @@ class EntityConstructor extends Constructor {
 			char[] binary = constructScalar((ScalarNode) node).toString().toCharArray();
 			byte[] decoded = Base64Coder.decode(binary);
 			return new ShortBlob(decoded);
+		}
+	}
+
+	private class KeyConstruct extends AbstractConstruct implements Construct {
+		@Override
+		@SuppressWarnings("unchecked")
+		public Object construct(Node node) {
+			List<Object> seq = (List<Object>) constructSequence((SequenceNode) node);
+			return KeyPath.fromKeyPath(seq.toArray());
+		}
+	}
+
+	private class BlobKeyConstruct extends AbstractConstruct implements Construct {
+		@Override
+		public Object construct(Node node) {
+			String blobKey = constructScalar((ScalarNode) node).toString();
+			return new BlobKey(blobKey);
 		}
 	}
 }

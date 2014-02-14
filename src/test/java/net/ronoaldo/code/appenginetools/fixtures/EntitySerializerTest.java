@@ -16,12 +16,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.appengine.api.blobstore.BlobKey;
+
 import com.google.appengine.api.datastore.Blob;
-import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 
 public class EntitySerializerTest {
@@ -66,6 +69,23 @@ public class EntitySerializerTest {
 		Entity d = s.deserialize(yaml).next();
 		assertEquals(e.getProperty("short-blob"), d.getProperty("short-blob"));
 		assertEquals(e.getProperty("long-blob"), d.getProperty("long-blob"));
+	}
+
+	@Test
+	public void testSerializeKeys() throws Exception {
+		Entity e = new Entity("File", "/tmp/my-file.csv");
+		e.setProperty("fileName", "my-file-renamed.csv");
+		e.setProperty("blobKey", new BlobKey(KeyFactory.createKeyString("__BlobInfo__", "test")));
+		e.setProperty("parentKey", KeyFactory.createKey("File", "/tmp/"));
+
+		EntitySerializer s = new EntitySerializer();
+		String yaml = s.serialize(asList(e).iterator());
+		System.out.println("Yaml:\n" + yaml);
+		
+		Entity d = s.deserialize(yaml).next();
+		assertEquals(e.getProperty("fileName"), d.getProperty("fileName"));
+		assertEquals(e.getProperty("blobKey"), d.getProperty("blobKey"));
+		assertEquals(e.getProperty("parentKey"), d.getProperty("parentKey"));
 	}
 
 	@Test
